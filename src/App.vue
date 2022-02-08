@@ -1,21 +1,30 @@
 <template>
   <div id="app" class="app">
     <div class="app__level">
-      <div class="app__level__wrapper">
+      <div class="app__level__wrapper" v-if="this.attempts != 0 && this.counter != 8">
         <h4 class="app__level__wrapper__header">Выберите уровень сложности</h4>
         <div class="app__level__wrapper__lvlBlock">
-          <input class="app__level__wrapper__lvlBlock__radio" value=20 checked id="easy" name="level" type="radio">
-          <label class="app__level__wrapper__lvlBlock__label" for="easy">Легкий (20 попыток)</label>
+          <input class="app__level__wrapper__lvlBlock__radio" value=25 checked id="easy" name="level" type="radio">
+          <label class="app__level__wrapper__lvlBlock__label" for="easy">Легкий (25 попыток)</label>
         </div>
         <div class="app__level__wrapper__lvlBlock">
-          <input class="app__level__wrapper__lvlBlock__radio" value=15 id="normal" name="level" type="radio">
-          <label class="app__level__wrapper__lvlBlock__label" for="normal">Средний (15 попыток)</label>
+          <input class="app__level__wrapper__lvlBlock__radio" value=20 id="normal" name="level" type="radio">
+          <label class="app__level__wrapper__lvlBlock__label" for="normal">Средний (20 попыток)</label>
         </div>
         <div class="app__level__wrapper__lvlBlock">
-          <input class="app__level__wrapper__lvlBlock__radio" value=10 id="hard" name="level" type="radio">
-          <label class="app__level__wrapper__lvlBlock__label" for="hard">Сложный (10 попыток)</label>
+          <input class="app__level__wrapper__lvlBlock__radio" value=15 id="hard" name="level" type="radio">
+          <label class="app__level__wrapper__lvlBlock__label" for="hard">Сложный (15 попыток)</label>
         </div>
-        <div class="app__level__wrapper__lvlBlock__btn" @click="mix">Начать</div>
+        <div class="app__level__wrapper__btn" @click="mix">Начать</div>
+      </div>
+
+      <div class="app__level__wrapper" v-else-if="this.attempts == 0">
+        <h4 class="app__level__wrapper__header">Вы проиграли</h4>
+        <div class="app__level__wrapper__btn" @click="start">Начать занаво</div>
+      </div>
+      <div class="app__level__wrapper" v-else-if="this.counter == 8">
+        <h4 class="app__level__wrapper__header">Вы выиграли</h4>
+        <div class="app__level__wrapper__btn" @click="start">Начать занаво</div>
       </div>
     </div>
     <div class="app__header">Card Memory Game</div>
@@ -101,7 +110,6 @@
 </template>
 
 <script>
-
 export default {
   name: 'App',
   data() {
@@ -109,7 +117,7 @@ export default {
       flag: false,
       item: null,
       value: null,
-      counter: 0,
+      counter: null,
       attempts: null
     }
   },
@@ -128,8 +136,10 @@ export default {
         document.getElementsByClassName('app__wrapper__card')[x].classList.toggle('app__wrapper__card_isFlipped')
         if (this.value.innerHTML != document.getElementsByClassName('app__wrapper__card__face_back')[x].innerHTML) {
           this.attempts -= 1
-          if (this.attempts == 0) {
-            console.log('Game Over!')
+          if (this.attempts < 11 && this.attempts > 5) document.getElementsByClassName('app__panel__attempts')[0].classList.add('app__panel__attempts_orange')
+          else if (this.attempts < 6 && this.attempts > 0) document.getElementsByClassName('app__panel__attempts')[0].classList.add('app__panel__attempts_red')
+          else if (this.attempts == 0) {
+            document.getElementsByClassName('app__level')[0].classList.toggle('app__level_close')
           }
           setTimeout(() => {
             this.item.classList.toggle('app__wrapper__card_isFlipped')
@@ -147,13 +157,17 @@ export default {
             this.flag = false
             this.item = null
             this.value = null
-            if (this.counter == 8) console.log('Win!')
+            if (this.counter == 8) {
+              document.getElementsByClassName('app__level')[0].classList.toggle('app__level_close')
+            }
           }, 700);
         }
       }
     },
     start() {
-      document.getElementsByClassName('app__level')[0].classList.toggle('app__level_close')
+      this.attempts = null
+      this.counter = null
+      document.getElementsByClassName('app__level')[0].classList.add('app__level_close')
     },
     mix() {
       let mass = ["<img src='https://img.icons8.com/ios-glyphs/30/vk-circled.png'>",
@@ -190,7 +204,6 @@ export default {
   @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100&display=swap');
 
   .app {
-    background-color: #eeeeee;
 
     &__header {
       text-align: center;
@@ -207,8 +220,16 @@ export default {
       &__attempts {
         font-family: 'Roboto', sans-serif;
         font-size: 20px;
-        color: red;
+        color: darkgreen;
         margin-right: 385px;
+
+        &_orange {
+          color: orange;
+        }
+
+        &_red {
+          color: red;
+        }
       }
 
       &__repeat {
@@ -285,6 +306,7 @@ export default {
       position: absolute;
       display: none;
       justify-content: center;
+      align-items: center;
 
       &_close {
         display: flex;
@@ -292,10 +314,10 @@ export default {
 
       &__wrapper  {
         background-color: #eeeeee;
-        height: 200px;
+        height: fit-content;
         border-radius: 30px;
         padding: 20px;
-        margin-top: 200px;
+        margin-bottom: 245px;
 
         &__header {
           font-family: 'Roboto', sans-serif;
@@ -316,20 +338,19 @@ export default {
             cursor: pointer;
             color: #424242;
           }
+        }
 
-          &__btn {
-            font-family: 'Roboto', sans-serif;
-            cursor: pointer;
-            border: 1px solid #00A1F1;
-            text-align: center;
-            color: #00A1F1;
-            margin-top: 23px;
-            transition: 1s;
+        &__btn {
+          font-family: 'Roboto', sans-serif;
+          cursor: pointer;
+          border: 1px solid #00A1F1;
+          text-align: center;
+          color: #00A1F1;
+          transition: 1s;
 
-            &:hover {
-              color: white;
-              background: #00A1F1;
-            }
+          &:hover {
+            color: white;
+            background: #00A1F1;
           }
         }
       }
